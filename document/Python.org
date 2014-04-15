@@ -61,3 +61,57 @@
       只需将return换成yield即可
       变成generator的函数，
        在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行
+** 模块搜索路径
+   import sys
+   sys.path #=> 输出模块的加载路径
+*** 添加修改路径
+    1. 修改sys.path
+       sys.path.append('/loadpath')
+    2. 设置PYTHONPATH
+** 使用__future__
+   把下一个新版本的特性导入到当前版本，于是我们就可以在当前版本中测试一些新版本的特性
+   例如:
+   from __future__ import unicode_literals
+   print isinstance('xxx', unicode) #=> True
+
+   from __future__ import division
+   10 / 3 #=> 3.3333
+** 对象
+   获取对象信息
+   type(xx)
+   python将每种type类型都定义好了常量, 放在types模块里, 使用之前, 导入即可
+   import types
+   if type('abc') == types.StringType: xx
+   注意有一种类型就叫TypeType，所有类型本身的类型就是TypeType, 如:
+   type(int) == type(str) == types.TypeType
+
+   能用type()判断的基本类型也可以用isinstance()判断
+   isinstance()还可以判断一个变量是否是某些类型中的一种
+   isinstance('a', (str, unicode))
+   利用hasattr(), getattr(), setattr()可以操作一个对象的状态
+   如果在使用getattr()获取不存在的属性时, 会报错, 可以设定一个默认值
+   getattr(obj, 'z', 404) #属性z不存在, 就返回404
+   getattr() 也可以获取对象的方法
+*** __slots__   
+    想限制类的属性, 就需要用到__slots__变量
+    __slots__定义的属性仅对当前类起作用，对继承的子类是不起作用的
+    除非在子类中也定义__slots__,这样,子类允许定义的属性就是自身的__slots__加上父类的__slots__
+
+    如果父类没有定义__slots__, 则子类定义的__slots__的不起作用
+    
+*** 对类的所有属性和方法调用全部动态化, __getattr__
+    只有在没有找到属性的情况下, 才调用__getattr__, 已有的属性, 不会在__getattr__
+    中查找, 利用该方法可以动态的调用
+    class Chain(object):
+        def __init__(self, path=''):
+            self._path = path
+
+        def __getattr__(self, path):
+            return Chain('%s/%s' % (self._path, path))
+
+        def __str__(self):
+            return self._path
+*** 可调用
+    通过callable(), 可以判断出一个对象是否是"可调用"对象
+    任何类，只需要定义一个__call__()方法，就可以直接对实例进行调用
+    
