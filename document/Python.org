@@ -20,3 +20,35 @@
    完全可以把一个函数名赋值给一个变量,  相当于给这个函数起了一个"别名"
    a = abs
    a(-1) #=> 1
+*** 默认参数
+    定义默认参数必须指向不变的对象, 否则会出现一些很奇怪的问题
+    对于任何函数, 通过类似func(*args, **kw)的形式调用它，不管它的参数是如何定义的
+*** 递归调用
+    解决递归调用栈溢出的方法是通过尾递归优化。
+    尾递归是指，在函数返回的时候，调用自身本身，并且，return语句不能包含表达式。
+    这样，编译器或者解释器就可以把尾递归做优化，使递归本身无论调用多少次，都只占用一个栈帧，
+    不会出现栈溢出的情况
+    为调用的定义: http://zh.wikipedia.org/zh-cn/%E5%B0%BE%E8%B0%83%E7%94%A8
+    但是python没有对尾递归做优化, 一个针对尾递归优化的decorator,参考源码:
+    http://code.activestate.com/recipes/474088-tail-call-optimization-decorator/
+
+    针对尾递归优化的语言可以通过尾递归防止栈溢出。尾递归事实上和循环是等价的，
+    没有循环语句的编程语言只能通过尾递归实现循环
+** for
+   当我们使用for循环时，只要作用于一个可迭代对象，for循环就可以正常运行，
+   而我们不太关心该对象究竟是list还是其他数据类型
+   判断一个对象是否是可迭代对象:
+   from collections import Iterable
+   isinstance('abc', Iterable) #=> True, 可迭代对象, False不可迭代对象
+
+   enumerate可以将list变成索引-元素对
+   for i, v in enumrate([1, 2, 3]):
+       print i, v
+** 生成器
+   创建生成器的方法
+   1. 将一个列表生成式稍作变化即可,
+      g = (s for s in xrange(11))
+   2. 将一个函数变成生成器
+      只需将return换成yield即可
+      变成generator的函数，
+       在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行
