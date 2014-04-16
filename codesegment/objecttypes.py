@@ -84,8 +84,8 @@ Hello = type('Hello', (object,), dict(hello=fn)) #创建Hello的类
 #class的方法名称与函数绑定，这里我们把函数fn绑定到方法名hello上
 #通过type()函数创建的类和直接写class是完全一样的，因为Python解释器遇到class定义时，仅仅是扫描一下class定义的语法，然后调用type()函数创建出class
     
+class Animal(object):
+    name = 'animal' #类属性
+    def __init__(self, age):
+        self.age = age #实例属性
 
-    
-
-
-    
