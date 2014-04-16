@@ -37,7 +37,7 @@
     尾递归是指，在函数返回的时候，调用自身本身，并且，return语句不能包含表达式。
     这样，编译器或者解释器就可以把尾递归做优化，使递归本身无论调用多少次，都只占用一个栈帧，
     不会出现栈溢出的情况
-    为调用的定义: http://zh.wikipedia.org/zh-cn/%E5%B0%BE%E8%B0%83%E7%94%A8
+    尾调用的定义: http://zh.wikipedia.org/zh-cn/%E5%B0%BE%E8%B0%83%E7%94%A8
     但是python没有对尾递归做优化, 一个针对尾递归优化的decorator,参考源码:
     http://code.activestate.com/recipes/474088-tail-call-optimization-decorator/
 
@@ -98,7 +98,6 @@
     除非在子类中也定义__slots__,这样,子类允许定义的属性就是自身的__slots__加上父类的__slots__
 
     如果父类没有定义__slots__, 则子类定义的__slots__的不起作用
-    
 *** 对类的所有属性和方法调用全部动态化, __getattr__
     只有在没有找到属性的情况下, 才调用__getattr__, 已有的属性, 不会在__getattr__
     中查找, 利用该方法可以动态的调用
@@ -111,7 +110,48 @@
 
         def __str__(self):
             return self._path
+    具体使用参看codesegment/objecttypes.py
 *** 可调用
     通过callable(), 可以判断出一个对象是否是"可调用"对象
     任何类，只需要定义一个__call__()方法，就可以直接对实例进行调用
+*** Mixin
+    如果需要“混入”额外的功能，通过多重继承就可以实现，
+    比如，让Ostrich除了继承自Bird外，再同时继承Runnable。这种设计通常称之为Mixin。
+    为了更好地看出继承关系，我们把Runnable和Flyable改为RunnableMixin和FlyableMixin。
+    类似的，你还可以定义出肉食动物CarnivorousMixin和植食动物HerbivoresMixin，
+    让某个动物同时拥有好几个Mixin
+    
+    class Dog(Mammal, RunnableMixin, CarnivorousMixin):
+        pass
+*** 定制类
+    通过实现类的特定方法, 如__str__, __len__等等方法
+    __str__: 将类返回一个好看的格式
+    __iter__: 类可以迭代, 此时还要定义next方法
+    __getitem__: 类可以当做list来取数据, 此时入股传入的是一个slice, 需要对slice做特殊处理
+    例如:
+    class Fib(object):
+    def __getitem__(self, n):
+        if isinstance(n, int):
+            a, b = 1, 1
+            for x in range(n):
+                a, b = b, a + b
+            return a
+        if isinstance(n, slice):
+            start = n.start
+            stop = n.stop
+            a, b = 1, 1
+            L = []
+            for x in range(stop + 1):
+                if x >= start:
+                    L.append(a)
+                a, b = b, a + b
+            return L
+    __call__: 可以直接对实例进行调用,__call__()还可以定义参数。对实例进行直接调用就好比对一个函数进行调用一样
+*** 使用type创建类    
+    type()函数既可以返回一个对象的类型，又可以创建出新的类型
+    参考codesegment/objecttypes.py
+*** metaclass
+    控制类的创建行为，还可以使用metaclass
+    即:先定义metaclass，就可以创建类，最后创建实例
+    参见 codesegment/metaclass.py
     
