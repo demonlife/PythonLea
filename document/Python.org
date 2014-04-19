@@ -154,7 +154,7 @@
     控制类的创建行为，还可以使用metaclass
     即:先定义metaclass，就可以创建类，最后创建实例
     参见 codesegment/metaclass.py
-    
+    一个理解元类的网址: http://blog.jobbole.com/21351/
 *** 类属性与实例属性
     直接在类中定义的属性就是类属性
     通过self.xx = xx的属性是实例属性
