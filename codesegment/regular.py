@@ -42,6 +42,3 @@ m1 = re_email1.match('demonlife2013@gmail.com')
 m2 = re_email1.match('<demonlife> demonlife2013@test.gmail.com')
 #print m2.groups()
 #print 'regulare group name: %s' % m2.group('nametag')
-
-
-
