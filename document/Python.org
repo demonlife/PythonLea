@@ -53,7 +53,7 @@
    enumerate可以将list变成索引-元素对
    for i, v in enumrate([1, 2, 3]):
        print i, v
-** 生成器
+** 生成器-yield
    创建生成器的方法
    1. 将一个列表生成式稍作变化即可,
       g = (s for s in xrange(11))
@@ -61,6 +61,24 @@
       只需将return换成yield即可
       变成generator的函数，
        在每次调用next()的时候执行，遇到yield语句返回，再次执行时从上次返回的yield语句处继续执行
+   可以利用isgeneratorfunction 来判断一个函数是否是一个特殊的迭代器
+   from inspect import isgeneratorfunction
+   isgeneratorfunction(fab) # true if fab is a generator function
+   要注意区分fab与fab(5)， fab是一个generator function，而fab(5)调用返回的是一个generator
+   例如：
+   import types
+   isinstance(fab, types.GeneratorType) # false
+   isinstance(fab(5), types.GeneratorType) # true
+   yield的另一个用处是读取大文件时防止占用大量内存
+   def read_file(fpath):
+       BLOCK_SIZE = 1024
+       with open(fpath, 'rb') as f:
+           while True:
+               block = f.read(BLOCK_SIZE)
+               if block:
+                   yield block
+               else:
+                   return 
 ** 模块搜索路径
    import sys
    sys.path #=> 输出模块的加载路径
@@ -160,6 +178,13 @@
     即:先定义metaclass，就可以创建类，最后创建实例
     参见 codesegment/metaclass.py
     一个理解元类的网址: http://blog.jobbole.com/21351/
+    Python中创建类的内部机制是：
+    1. 当看见一个类的定义，python首先搜集所有属性到一个字典中
+    2. 当类结束定义，python将决定类的元类，姑且称它为Meta
+    3. python 执行Meta(name, base, dct), 其中：
+       Meta是元类，所以这个调用是实例化
+       name是新建类的类名，bases是新建类的基类元素，多个值时用tupple表示
+       dct将属性名映射到对象，列出所有的类属性
 *** 类属性与实例属性
     直接在类中定义的属性就是类属性
     通过self.xx = xx的属性是实例属性
@@ -353,3 +378,124 @@
 ** json
    import json
    json.dumps(mydict, ensure_ascii=False, indent=2) #输出中文，并且带有2个缩进
+** 上下文管理器
+   with关键词
+*** 自定义上下文管理器
+    要实现上下文管理器，必须实现两个方法--一个负责进入语句块的准备操作，一个是负责离开语句块的善后操作
+    当一个对象被用作上下文管理器时：
+    __enter__:方法将在进入代码块前被调用
+    __exit__:方法在离开代码块后被调用，即时在代码中遇到了异常
+    class PypixContextManagerDemo:
+        def __enter__(self):
+            print 'Entering the block'
+         
+        def __exit__(self, *unused):
+            print 'Exiting the block'
+ 
+    with PypixContextManagerDemo():
+        print 'In the block'
+
+    传递参数，可以使用类的__init__方法
+    class PypixOpen:
+        def __init__(self, filename, mode):
+            self.filename = filename
+            self.mode = mode
+        def __enter__(self):
+            pass
+        def __exit__(self, *unused):
+            pass
+
+        with PypixOpen(filename, mode) as writer:
+            writer.write("Hello world from our new context manager")
+    处理异常
+    如果语句块内部发生了异常，__exit__方法将会被调用，而异常将会被重新抛出
+    完全的__exit__函数签名是：
+    def __exit__(self, exc_type, exc_val, ext_tb)
+    这样__exit__函数就能够拿到关于异常的所有信息(异常类型，异常值以及异常追踪信息)，
+    这些信息将帮助异常处理操作。
+*** contextlib的内容
+    contexlib是一个python模块，作用是提供更易用的上下文管理器
+    例如处理数据库：
+    with contextlib.closing(createdatabase()) as database:
+        database.query()
+    contextlib.closing方法将在语句块作用结束后调用数据库的关闭方法 
+
+    contextlib.nested可以帮助减少嵌套的调用，例如：
+    with open('rfile', 'r') as reader:
+        with open('wfile', 'w') as writer:
+            writer.writer(reader.read())
+    上述方法是不提倡使用的，此时可以用如下方法代替：
+    with contextlib.nested(open('fread', 'r'), open('fwrite', 'w')) as (reader, writer):
+        writer.writer(reader.read())
+    在python2.7中上述方法可以简写为：
+    with open('fread', 'r') as reader, open('fwrite‘, 'w') as writer:
+        writer.writer(reader.read())
+    对于python高级玩家来说，任何能够被yield关键词分割成两部分的函数，都能够通过装饰器的上下文管理器来实现，
+    任何在yield之前的内容都可以看做在代码块之前执行，yield后的代码可以看做放在exit函数中
+    例如线程锁的例子：
+    import threading
+    lock = threading.Lock()
+    def safewrite(file, content):
+        lock.acquire()
+        file.write(content)
+        lock.release()
+    使用上下文管理来实现：
+    @contextlib.contextmanager
+    def loudLock():
+        print "locking"
+        lock.acquire()
+        yield
+        print 'releasing'
+        lock.release()
+
+    with loudLock():
+        print 'lock is locked: %s' % lock.locked()
+        print 'doing something that needs locking'
+        
+    注意：这不是异常安全的写法，如果想保证异常安全，可以对yield使用try语句，threading.lock是一个上下文管理
+    器了，只需简单的处理就行，如下：
+    @contextlib.contextmanager
+    def loudLock():
+        print 'locking'
+        with lock:
+            yield
+        print 'releasing'
+    此时当threading.lock在异常发生时会通过__exit__函数返回false
+    如果你希望在上下文管理器中使用“as”关键字，那么就用yield返回你需要的值，它将通过as关键字赋值给新的变量。
+** 列表推导
+   def sgen(optional_parameter):
+       return (x ** 2 for x in num if x > optional_parameter)
+   sgen(0) #是一个generator
+** 装饰器
+*** 类装饰器
+    对装饰器的类实现唯一要求是它必须能如函数一般使用，也就是说它必须是可调用的。
+    所以，如果想这么做这个类必须实现__call__方法。
+** 描述器
+   描述器很好的总结了Python中的绑定方法(bound method)这个概念，绑定方法是经典类(classic classes)的
+   实现核心。在经典类中，当在一个对象实例的字典中没有找到某个属性时，会继续到类的字典中查找，
+   然后再到基类的字典中，就这么一直递归的查找下去。如果在类字典中找到这个属性，
+   解释器会检查找到的对象是不是一个Python函数对象。如果是，则返回的并不是这个对象本身，
+   而是返回一个柯里化(currying function)的包装器对象。当调用这个包装器时，它会首先在参数列表之前插入实例，
+   然后再调用原函数。
+   柯里化：http://zh.wikipedia.org/wiki/%E6%9F%AF%E9%87%8C%E5%8C%96
+   function，method，bound method及unbound method的区别。首先，函数(function)是由def或lambda创建的。
+   当一个函数在class语句块中定义或是由type来创建时，它会转成一个非绑定方法(unbound method)，
+   而当通过类实例(instance)来访问此方法的时候，它将转成绑定方法(bound method)，
+   绑定方法会自动将实例作为第一个参数传入方法。综上所述，方法是出现在类中的函数，
+   绑定方法是一个绑定了具体实例的方法，反之则是非绑定方法。
+   
+* 测试
+  在python中一个函数就可以认为是一个单元
+  测试文件的例子：
+  import unittest
+  #import 想要测试的模块
+
+  class xx(unittest.TestCase):
+      def test_xx(参数):
+          self.assertTrue(函数名(参数))
+
+  if __name__ == '__main__':
+      unittest.main()
+  如果想执行测试函数，则该函数应该以test_开头命名
+* 并发编程
+  
