@@ -205,7 +205,7 @@
      之后运行程序(python filename.py), 程序会自动在此处暂停并进入pdb调试环境
 ** 正则表达式
 ***    
-** 数据结构       
+** 数据结构 
    http://blog.jobbole.com/65218/
 *** collections
     collections模块包含了内建类型之外的一些有用的工具，
@@ -372,6 +372,165 @@
     pprint模块能够提供比较优雅的数据结构打印方式，如果你需要打印一个结构较为复杂，
     层次较深的字典或是JSON对象时，使用Pprint能够提供较好的打印结果
     
+** 序列化
+   Python提供两个模块来实现序列化：cPickle和pickle。
+   这两个模块功能是一样的，区别在于cPickle是C语言写的，速度快，pickle是纯Python写的，速度慢，
+   跟cStringIO和StringIO一个道理，用的时候，先尝试导入cPickle，如果失败，再导入pickle，例如：
+   try:
+       import cPickle as pickle
+   except ImportError:
+       import pickle
+
+   pickle.dumps()方法把任意对象序列化成一个str，然后，就可以把这个str写入文件。
+   或者用另一个方法pickle.dump()直接把对象序列化后写入一个file-like Object，例如：
+   pickle.dump(data, filehandle)
+
+   对象从磁盘读到内存时，可以先把内容读到一个str，然后用pickle.loads()方法反序列化出对象，
+   也可以直接用pickle.load()方法从一个file-like Object中直接反序列化出对象
+   data = pickle.load(filehandle)
+
+   Pickle的问题和所有其他编程语言特有的序列化问题一样，就是它只能用于Python，
+   并且可能不同版本的Python彼此都不兼容，因此，只能用Pickle保存那些不重要的数据，
+   不能成功地反序列化也没关系。
+** json
+   python中的None会转换为json的null
+   dumps()方法返回一个str，内容就是标准的JSON。
+
+   类似的，dump()方法可以直接把JSON写入一个file-like Object
+   要把JSON反序列化为Python对象，用loads()或者对应的load()方法，前者把JSON的字符串反序列化，
+   后者从file-like Object中读取字符串并反序列化
+
+   反序列化得到的所有字符串对象默认都是unicode而不是str。由于JSON标准规定JSON编码是UTF-8，
+   所以我们总是能正确地在Python的str或unicode与JSON的字符串之间转换
+*** 将class实例化为json
+    可选参数default就是把任意一个对象变成一个可序列为JSON的对象，
+    我们只需要为类专门写一个转换函数，再把函数传进去即可，例如：
+    def student2dict(std):
+        return {
+            'name':std.name,
+            'age': std.age',
+            'score': std.score
+        }
+    print json.dumps(s, default=student2dict)
+    但是如果还有其他的类，使用上诉方法就不好了，可以使用如下方法：
+    print json.dumps(s, default=lambda obj: obj.__dict__)
+    通常class的实例都有一个__dict__属性，它就是一个dict，用来存储实例变量。
+    也有少数例外，比如定义了__slots__的class
+
+    同理loads也一样，传入的object_hook函数负责转换为某个实例
+** 多进程
+   Linux/Unix的fork()调用一次返回两次，因为操作系统自动把当前进程（称为父进程）复制了一份（称为子进程），
+   然后，分别在父进程和子进程内返回。
+   子进程永远返回0，而父进程返回子进程的ID。这样做的理由是，一个父进程可以fork出很多子进程，所以，
+   父进程要记下每个子进程的ID，而子进程只需要调用getppid()就可以拿到父进程的ID
+
+   import os
+   os.fork() # 由于windows没有fork，因此不能使用该方法来实现多进程
+   multiprocessing 就是用来解决跨平台的多进程问题的
+   multiprocessing模块提供了一个Process类来代表一个进程对象，
+   下面的例子演示了启动一个子进程并等待其结束：
+*** 使用进程池
+    from multiprocessing import Pool
+
+    import os, time, random
+      
+    def long_task(name):
+        print 'run task %s (%s) ...' %(name, os.getpid())
+        start = time.time()
+        time.sleep(random.random() * 3)
+        end = time.time()
+        print 'task %s runs %0.2f seconds.' %(name, (end-start))
+     
+    if __name__ == '__main__':
+        print 'parent process %s.' % os.getpid()
+        p = Pool() #p = Pool(5) #设定5个进程池，默认为CPU的核数
+        for i in xrange(5):
+            p.apply_async(long_task, args=(i,))
+        print 'waiting for all subprocess done...'
+        p.close()
+        p.join()
+        print 'all done'
+    对Pool对象调用join()方法会等待所有子进程执行完毕，调用join()之前必须先调用close()，
+    调用close()之后就不能继续添加新的Process了
+*** 进程间通信
+    Python的multiprocessing模块包装了底层的机制，提供了Queue、Pipes等多种方式来交换数据
+    from multiprocessing import Queue, Process
+    import os, random, time
+     
+    def write(q):
+        for v in ['a', 'b', 'c', 'd']:
+            q.put(v)
+            time.sleep(random.random())
+     
+    def read(q):
+        while True:
+            value = q.get(True)
+            print 'get %s from q' % value
+     
+    if __name__ == '__main__':
+        q = Queue()
+        p1 = Process(target=write, args=(q,))
+        p2 = Process(target=read, args=(q,))
+     
+        p1.start()
+        p2.start()
+        p1.join()
+        p2.terminate() #read 是死循环，因此无法等待其结束，只能强行终止
+    由于Windows没有fork调用，因此，multiprocessing需要“模拟”出fork的效果，
+    父进程所有Python对象都必须通过pickle序列化再传到子进程去，所有，
+    如果multiprocessing在Windows下调用失败了，要先考虑是不是pickle失败了
+
+** 多线程    
+   Python的线程是真正的Posix Thread，而不是模拟出来的线程
+   thread和threading，thread是低级模块，threading是高级模块，对thread进行了封装。
+   绝大多数情况下，我们只需要使用threading这个高级模块
+
+   import time, threading
+
+   def loop():
+       print 'threading %s is running... ' % threading.current_thread().name
+       n = 0
+       while n < 5:
+           print 'current thread %s >>>> %d' %(threading.current_thread().name, n)
+           n += 1
+       print 'current thread %s end' % threading.current_thread().name
+    
+   print 'thread %s is runnging...' % threading.current_thread().name
+   t = threading.Thread(target=loop, name="loopthread")
+   t.start()
+   t.join()
+   print 'thread %s end' % threading.current_thread().name
+
+   Python的threading模块有个current_thread()函数，它永远返回当前线程的实例
+   主线程实例的名字叫MainThread，子线程的名字在创建时指定
+   字仅仅在打印时用来显示，完全没有其他意义，如果不起名字Python就自动给线程命名为Thread-1，Thread-2
+   多线程中，所有变量都由所有线程共享，所以，任何一个变量都可以被任何一个线程修改，因此，
+   线程之间共享数据最大的危险在于多个线程同时改一个变量，把内容给改乱了
+   解决方法是加锁
+   balance = 0
+   lock = threading.Lock()
+    
+   def run_thread(n):
+       for i in range(100000):
+           # 先要获取锁:
+           lock.acquire()
+           try:
+               # 放心地改吧:
+               change_it(n)
+           finally:
+               # 改完了一定要释放锁:
+               lock.release()
+   当多个线程同时执行lock.acquire()时，只有一个线程能成功地获取锁，然后继续执行代码，其他线程就继续等待直到获得锁为止。
+   Python的线程虽然是真正的线程，但解释器执行代码时，有一个GIL锁：Global Interpreter Lock，
+   任何Python线程执行前，必须先获得GIL锁，然后，每执行100条字节码，解释器就自动释放GIL锁，
+   让别的线程有机会执行。这个GIL全局锁实际上把所有线程的执行代码都给上了锁，所以，
+   多线程在Python中只能交替执行，即使100个线程跑在100核CPU上，也只能用到1个核。
+
+   在Python中，可以使用多线程，但不要指望能有效利用多核。如果一定要通过多线程利用多核，
+   那只能通过C扩展来实现，不过这样就失去了Python简单易用的特点。
+
+   Python虽然不能利用多线程实现多核任务，但可以通过多进程实现多核任务。
+   多个Python进程有各自独立的GIL锁，互不影响
 * python 技巧
 ** 一行代码定义一颗树
    def tree(): return defaultdict(tree)
@@ -483,7 +642,15 @@
    而当通过类实例(instance)来访问此方法的时候，它将转成绑定方法(bound method)，
    绑定方法会自动将实例作为第一个参数传入方法。综上所述，方法是出现在类中的函数，
    绑定方法是一个绑定了具体实例的方法，反之则是非绑定方法。
-   
+** 处理编码问题
+   由于在python3中字符串默认使用unicode，如果想在python 2.7的版本中也默认使用unicode的话，可以
+   使用如下代码：
+   from __future__ import unicode_literals
+
+   Python还提供了一个codecs模块帮我们在读文件时自动转换编码，直接读出unicode：
+   import codecs
+   with codecs.open('/Users/michael/gbk.txt', 'r', 'gbk') as f:
+       f.read() # u'\u6d4b\u8bd5'
 * 测试
   在python中一个函数就可以认为是一个单元
   测试文件的例子：
@@ -497,5 +664,36 @@
   if __name__ == '__main__':
       unittest.main()
   如果想执行测试函数，则该函数应该以test_开头命名
-* 并发编程
-  
+* 函数对象
+  def foo(a):
+      x = 3
+      return x + a
+
+  foo.func_code
+  dir(foo.func_code)
+  foo.func_code.co_varnames #获取函数的变量名
+  foo.func_code.co_consts #函数中已知的常量
+  foo.func_code.co_argcount #函数参数的数量
+  foo.func_code.co_code #获取函数字节码
+  读取字节码的值
+  [ord(b) for b in foo.func_code.co_code]
+  字节码本身并不包含任何python对象，或引用任何对象
+  使用dis函数分析foo函数
+  import dis
+  dis.dis(foo.func_code) # <--> dis.dis(foo)
+  输出的数据格式说明：
+  左边那一列数字是原始源代码的行号。第二列是字节码的偏移量：LOAD_CONST在第0行，STORE_FAST在第3行，
+  以此类推。中间那列是字节的名字。它们是为程序员所准备的——解释器是完全不需要的。
+  最后两列告诉我们一些关于指令参数（如果有的话）的细节。第四列是参数本身。
+  它表示一个指向代码对象其它属性的索引。在这个例子中，LOAD_CONST的参数指向列表co_consts，
+  STORE_FAST的参数指向co_varnames。dis在第四列所指向的的地方查找常数或者名称,
+  最后在第五列返回给我们它找到的数据。这很容易就能得到证实了：
+  foo.func_code.co_consts[1] #3
+  foo.func_code.co_varnames[1] #'x'
+** 一个有意思的问题
+   def modulus(x, y):
+       return x % y
+
+   modulus('hello %s', 'world') # --> hello world，能顺利执行输出，为什么不报错？答案见下：
+   反编译modulus函数，dis.dis(modulus)，会看到反编译后的代码中有一个语句BINARY_MODULO，
+   当BINARY_MODULO处理两个字符串的时候，它默认执行字符串插值而不是求余数，因此会出现上述情况
