@@ -203,8 +203,6 @@
      import pdb
      在需要调试的代码前: pdb.set_trace()
      之后运行程序(python filename.py), 程序会自动在此处暂停并进入pdb调试环境
-** 正则表达式
-***    
 ** 数据结构 
    http://blog.jobbole.com/65218/
 *** collections
@@ -367,11 +365,9 @@
     对于shallow copy而言，它创建一个新的混合对象，并且将原对象中其他对象的引用插入新对象
     对于deep copy而言，它创建一个新的对象，并且递归地复制源对象中的其他对象并插入新的对象中
     普通的赋值操作只是简单的将新变量指向源对象
-    
 *** pprint
     pprint模块能够提供比较优雅的数据结构打印方式，如果你需要打印一个结构较为复杂，
     层次较深的字典或是JSON对象时，使用Pprint能够提供较好的打印结果
-    
 ** 序列化
    Python提供两个模块来实现序列化：cPickle和pickle。
    这两个模块功能是一样的，区别在于cPickle是C语言写的，速度快，pickle是纯Python写的，速度慢，
@@ -479,7 +475,6 @@
     由于Windows没有fork调用，因此，multiprocessing需要“模拟”出fork的效果，
     父进程所有Python对象都必须通过pickle序列化再传到子进程去，所有，
     如果multiprocessing在Windows下调用失败了，要先考虑是不是pickle失败了
-
 ** 多线程    
    Python的线程是真正的Posix Thread，而不是模拟出来的线程
    thread和threading，thread是低级模块，threading是高级模块，对thread进行了封装。
@@ -531,12 +526,16 @@
 
    Python虽然不能利用多线程实现多核任务，但可以通过多进程实现多核任务。
    多个Python进程有各自独立的GIL锁，互不影响
+** import 的顺序
+   参考：http://legacy.python.org/dev/peps/pep-0008/#imports
+   此处的import顺序只是建议，不是强制要求
+   1. 标准库的import
+   2. 相关的第三方库的import
+   3. 当前项目中的import
+      
 * python 技巧
 ** 一行代码定义一颗树
    def tree(): return defaultdict(tree)
-** json
-   import json
-   json.dumps(mydict, ensure_ascii=False, indent=2) #输出中文，并且带有2个缩进
 ** 上下文管理器
    with关键词
 *** 自定义上下文管理器
@@ -651,6 +650,41 @@
    import codecs
    with codecs.open('/Users/michael/gbk.txt', 'r', 'gbk') as f:
        f.read() # u'\u6d4b\u8bd5'
+
+   一个引入unicode_literals的编码错误
+   详见：http://www.the5fire.com/unicodeencodeerror-from-future.html
+
+   #encoding:utf8
+   #from __future__ import unicode_literals #一旦引入该模块，则会出现编码错误
+   from datetime import datetime
+
+   now = datetime.now()
+   print now.strftime('%m月%d日 %H:%M')
+
+   解决方法一：设置运行时编码为utf8
+   #encoding:utf8
+
+   from __future__ import unicode_literals #一旦引入该模块，则会出现编码错误
+   from datetime import datetime
+
+   import sys
+   reload(sys)
+   system.setdefaultencoding('utf-8')
+
+   now = datetime.now()
+   print now.strftime('%m月%d日 %H:%M')
+   解决方案二：使用byte string
+
+   #encoding:utf8
+   from __future__ import unicode_literals #一旦引入该模块，则会出现编码错误
+   from datetime import datetime
+
+   now = datetime.now()
+   print now.strftime(b'%m月%d日 %H:%M')
+
+   #或者这样也行
+   t = bytearray('%m月 %d %H:%M', 'utf-8')
+   print now.strftime(str(t))
 * 测试
   在python中一个函数就可以认为是一个单元
   测试文件的例子：
