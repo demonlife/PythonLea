@@ -685,6 +685,22 @@
    #或者这样也行
    t = bytearray('%m月 %d %H:%M', 'utf-8')
    print now.strftime(str(t))
+** A collection of not-so-obvious Python stuff you should know   
+   http://nbviewer.ipython.org/github/rasbt/python_reference/blob/master/not_so_obvious_python_stuff.ipynb
+*** The C3 class resolution algorithm for multiple class inheritance
+    python中，类继承自object的类是新式类，类似class D: pass的类是旧式类。
+    新式类的mro算法采用的是C3 算法，
+    应用在Python中是为了解决原来基于深度优先搜索算法不满足本地优先级，和单调性的问题
+    因此在定义类时，最好使用新式类的方式
+    <code>
+*** using += on lists
+    Python lists are mutable objects as we all know. So, if we are using the += operator on lists,
+    we extend the list by directly modifying the object directly
+    However, if we use the assigment via my_list = my_list + ..., we create a new list object
+    the .append() and .extends() methods are modifying the list object in place
+*** true and false in the datetime module
+    bool(datetime.time(0,0,0)) --> false
+    bool(datetime.time(1,0,0)) --> true
 * 测试
   在python中一个函数就可以认为是一个单元
   测试文件的例子：
