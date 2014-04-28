@@ -112,12 +112,13 @@ dic = {
     "ship_days_min": "1",          
     "ship_days_max": "5",          
     "store_manager_name": "DoeJohn"          
-}          
+}
 
 result = re.compile(r'\[(.*)\]')
 #print result.sub("John", template, count=1)
 
 def multiple_replace(dic, text):
+    #re.escape 在正则表达式中将特殊字符当作普通字符来处理
     pattern = "|".join(map(lambda key: re.escape("[" + key + "]"), dic.keys()))
     return re.sub(pattern, lambda m: dic[m.group()[1:-1]], text)
 print multiple_replace(dic, template)
