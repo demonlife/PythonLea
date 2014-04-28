@@ -773,5 +773,8 @@
    <code -- named subpatterns>
 ** using callbacks
    In Python re.sub() can be used to add callback functionality to regular expression replacements
+   <code --callbacks>
    
-  
+* 第三方库
+** docopt
+   docopt是一个第三方开发的模块，用于创建command line interface
