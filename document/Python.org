@@ -137,6 +137,8 @@
 *** 可调用
     通过callable(), 可以判断出一个对象是否是"可调用"对象
     任何类，只需要定义一个__call__()方法，就可以直接对实例进行调用
+    注意：在使用callable判断类的实例是否是可以调用的，类本身是
+    可调用的。即只有定义了__call__的类的实例才是可调用的。
 *** Mixin
     如果需要“混入”额外的功能，通过多重继承就可以实现，
     比如，让Ostrich除了继承自Bird外，再同时继承Runnable。这种设计通常称之为Mixin。
@@ -701,6 +703,9 @@
 *** true and false in the datetime module
     bool(datetime.time(0,0,0)) --> false
     bool(datetime.time(1,0,0)) --> true
+** python 导入其他模块
+   当使用import 导入其他模块时, __name__的值是该模块的名字，
+   如果直接运行某个模块，则__name__的值为__main__
 * 测试
   在python中一个函数就可以认为是一个单元
   测试文件的例子：
