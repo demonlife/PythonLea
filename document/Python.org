@@ -768,5 +768,5 @@
    <code -- named subpatterns>
 ** using callbacks
    In Python re.sub() can be used to add callback functionality to regular expression replacements
+   <code --callbacks>
    
-  
