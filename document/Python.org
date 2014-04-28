@@ -747,3 +747,26 @@
    modulus('hello %s', 'world') # --> hello world，能顺利执行输出，为什么不报错？答案见下：
    反编译modulus函数，dis.dis(modulus)，会看到反编译后的代码中有一个语句BINARY_MODULO，
    当BINARY_MODULO处理两个字符串的时候，它默认执行字符串插值而不是求余数，因此会出现上述情况
+* Advanced regular expression tips and techniques
+  http://blog.jobbole.com/65605/
+  python 可以通过对re.compile 或 re.match 设置 re.DEBUG (实际上就是整数 128) 标志
+  就可以输出正则表达式的解析树
+** greedy
+   when greedy, the quantifiers (such as * or +) match as many character as possible
+   add a question mark(?) after the quantifier (.*?) it becomes “ungreedy”
+** lookahead and lookbehind assertions
+   <code --lookahead>
+** coditional(if-then-else) patterns
+   Regular expressions provide the functionality for checking certain conditions.
+   The format is as follows:
+   (?(?=regex)then|else)
+   The condition can be a number. In which case it refers to a previously captured subpattern
+   <code -- conditional>
+** no caputre subpatterns
+   <code -- no caputre>
+** named subpatterns
+   <code -- named subpatterns>
+** using callbacks
+   In Python re.sub() can be used to add callback functionality to regular expression replacements
+   
+  
