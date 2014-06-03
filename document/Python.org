@@ -784,3 +784,37 @@
    <invokecmd.py>
 * pymongo的使用
 ** 将mongo查询的数据转换为  
+* Python 环境搭建
+** 虚拟环境搭建
+*** 工具
+    该工具是virtualenv，使用python开发的一个创建虚拟环境的工具
+    ubuntu安装的命令如下：
+    apt-get install python-virtualenv/ sudo pip install virtualenv
+*** 使用
+    先建立一个目录： mkdir testvirtual => cd testvirtual
+    创建虚拟环境：virtualenv env1 => cd env1 => source bin/activate
+    此时会发现shell提示符前多了个env1提示，表明已经是在虚拟环境中了，在该环境中
+    可以任意安装python库，而不用担心会把系统自带的python库搞乱
+*** 另外一个工具
+    virtualenvwrapper，可以通过sudo pip install virtualenvwrapper来安装。
+    安装完之后，需要在用户根目录下的.bashrc末尾加入：
+    source /usr/local/bin/virtualenvwrapper.sh
+    设置好之后，可以使用如下方法操作虚拟环境：
+    mkvirtualenv env1
+    退出环境：deactivate
+    进入已经存在的环境或者切换环境： workon env1 或 env2
+    删除环境： rmvirtualenv env1
+** 软件安装
+*** lnmp 的安装
+    www.lnmp.org下载最新的源码，阅读readme查看安装方法
+*** setuptools
+    该软件主要是需要在安装mysqldb时需要该软件，下载setuptools-0.6c11.tar.gz即可
+*** mysqldb
+    下载mysqldb，在安装mysqldb前，需要先安装libmysqlclient-dev
+    sudo aptitude install libmysqlclient-dev，
+    修改mysqldb中的site.cfg文件，添加mysql_config文件的路径，该文件的路径可以
+    使用命令which mysql_config来确定
+*** redis
+    在官网下载最新的redis源码，执行make即可安装，
+    redis的启动:redis-server redis.conf
+    py-redis: https://github.com/andymccurdy/redis-py
