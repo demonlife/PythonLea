@@ -787,6 +787,7 @@
 * Python 环境搭建
 ** 虚拟环境搭建
 *** 工具
+    sudo aptitude install python-dev
     该工具是virtualenv，使用python开发的一个创建虚拟环境的工具
     ubuntu安装的命令如下：
     apt-get install python-virtualenv/ sudo pip install virtualenv
