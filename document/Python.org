@@ -787,6 +787,7 @@
 ** 将mongo查询的数据转换为  
 * Python 环境搭建
 ** 虚拟环境搭建
+   http://www.the5fire.com/virtualenv-python-env.html
 *** 工具
     sudo aptitude install python-dev
     该工具是virtualenv，使用python开发的一个创建虚拟环境的工具
