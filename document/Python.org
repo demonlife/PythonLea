@@ -222,9 +222,23 @@
     当查找一个不存在的键操作发生时，它的default_factory会被调用，提供一个默认的值，
     并且将这对键值存储下来。其他的参数同普通的字典方法dict()一致，
     一个defaultdict的实例同内建dict一样拥有同样地操作。
+*** dict
     对于比较大的字典类型，调用keys(), values(), items()会构成同样巨大的列表， 建议
     使用迭代器代替，以减少内存开销, 例如：
     d.iterkeys(), d.itervalues(), d.iteritems()
+**** 视图
+     判断两个字典间的差异，使用视图是最简便的做法
+     例如：
+     d1 = dict(a = 1, b=2)
+     d2 = dict(b = 2, c=3)
+     v1 = d1.viewitems()
+     v2 = d2.viewitems()
+     v1 & v2 # 求交集
+     视图让某些操作变得更加简洁，比如在不引入新数据项的情况下更新字典内容，
+     a = dict(x=1)
+     b = dict(x=10, y=20)
+     a.update({k:b[k] for k in a.viewkeys() & b.viewkeys()})
+     视图会和字典同步更新，修改字典视图也会实时改变
 *** array
     array模块定义了一个很像list的新对象类型，
     不同之处在于它限定了这个类型只能装一种类型的元素。array元素的类型是在创建并使用的时候确定的。
