@@ -31,10 +31,13 @@ def main():
 
     print p.get_memory_info()
 
+# 获取默认的系统编码
 import sys, locale
 print reload(sys)
 print 'python default encoding:', sys.getdefaultencoding()
 c = locale.getdefaultlocale()
 print 'current os encoding:', c
 sys.setdefaultencoding(c[1])
-    
+
+print >> sys.stderr, "error!", 456 #输出到错误输出
+
