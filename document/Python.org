@@ -222,6 +222,9 @@
     当查找一个不存在的键操作发生时，它的default_factory会被调用，提供一个默认的值，
     并且将这对键值存储下来。其他的参数同普通的字典方法dict()一致，
     一个defaultdict的实例同内建dict一样拥有同样地操作。
+    对于比较大的字典类型，调用keys(), values(), items()会构成同样巨大的列表， 建议
+    使用迭代器代替，以减少内存开销, 例如：
+    d.iterkeys(), d.itervalues(), d.iteritems()
 *** array
     array模块定义了一个很像list的新对象类型，
     不同之处在于它限定了这个类型只能装一种类型的元素。array元素的类型是在创建并使用的时候确定的。
@@ -821,3 +824,13 @@
     在官网下载最新的redis源码，执行make即可安装，
     redis的启动:redis-server redis.conf
     py-redis: https://github.com/andymccurdy/redis-py
+* Python的名字空间
+  名字空间时python最核心的内容
+  python的名字实际上是一个字符串对象，它和所指的目标对象一起在名字空间中构成一项
+  {name:object}关联，python有很多名字空间， 例如：globals的模块名字空间，
+  locals的函数堆栈名字空间，还有class，instance名字空间，不同的名字空间决定对象
+  的作用域和生命周期。
+  在函数外部，locals()和globals()作用完全相同， 在函数内部调用时，locals()则是
+  获取当前函数堆栈的名字空间,其存储的时函数参数，局部变量等信息。
+  可以通过<module>.__dict__访问其他模块的名字空间。
+  
