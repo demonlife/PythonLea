@@ -1,6 +1,6 @@
 #encoding:utf8
 
-#字典排序
+#字典排序, 使用多个字段排序
 person = [{'name':'aab', 'age':10, 'cnt':100},
           {'name':'aab', 'age':22, 'cnt':89},
           {'name':'aab', 'age':22, 'cnt':98},
