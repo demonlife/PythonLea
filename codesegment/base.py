@@ -41,3 +41,12 @@ sys.setdefaultencoding(c[1])
 
 print >> sys.stderr, "error!", 456 #输出到错误输出
 
+
+# exception block
+try:
+    l = ["a", "b"]
+    int(l[2])
+#except ValueError, IndexError:
+except (ValueError, IndexError) as e:
+    print 'right exception handler, error:', e
+    pass
