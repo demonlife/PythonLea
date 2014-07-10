@@ -856,7 +856,66 @@
   在函数外部，locals()和globals()作用完全相同， 在函数内部调用时，locals()则是
   获取当前函数堆栈的名字空间,其存储的时函数参数，局部变量等信息。
   可以通过<module>.__dict__访问其他模块的名字空间。
-  
 * Python 编写scheme
   http://blog.jobbole.com/47659/
+* python base64
+  base64是一种用64个字符来表示任意二进制数据的方法。
+  base64的原理，首先准备一个包含64个字符的数组，然后对二进制数据进行处理，每3个字节一组，
+  一共是3*8=24bit，化为4组，每组正好6个bit，这样得到4个数字作为索引， 然后查表，获得相应的4个
+  字符，就是编码后的字符串。
+  所以，base64编码会把3个字节的二进制数据编码为4个字节的文本数据，长度增加33%， 好处是用编码后
+  的文本数据可以在邮件正文，网页等直接显示。
+  如果要编码的二进制数据不是3的倍数，最后会剩下1个或2个字节，base64用\x00字节在末尾补足后，再在
+  末尾加上1个或2个=号，表示补了多少个字节，解码的时候，会自动去掉。
+  可以使用python内置的base64可以直接进行base64的编码。
+  import base64
+  base64.b64encode('binary\x00string')
+  base64.b64decode('YmluYXJ5AHN0cmluZw==')
+  由于标准的base64编码后可能出现+/，在url中不能直接作为参数，所以有一种url safe的base64编码，
+  其实就是将字符+/分别变成-_
+  base64.b64encode('i\xb7\x1d\xfb\xef\xff')
+  base64.urlsafe_b64encode('i\xb7\x1d\xfb\xef\xff')
+  base64.urlsafe_b64decode('abcd--__')
+  也可以自己定义64个字符的排列顺序，通常情况下是没有必要的。
+  base64是一种通过查表的编码方法，不能用于加密，即使使用自己定义的编码表也不行。
+  base64适用于小段内容的编码，比如数字证书签名，cookie的内容等。
+  由于=字符也可能出现在base64编码中，在url，cookie里面会造成歧义，所以很多base64编码后会去掉=
   
+* python的struct
+  https://docs.python.org/2/library/struct.html#format-characters
+  准确的讲，python无专门处理字节的数据类型。由于str既是字符串，又可表示字节，所以，字节数组=str
+  在python中，如果要将一个32位无符号数变成字节，即4个长度的str，可以配合位运算符这么写：
+  n = 10240099
+  b1 = chr((n & 0xff000000) >> 24)
+  b2 = chr((n & 0xff0000) >> 16)
+  b3 = chr((n & 0xff00) >> 8)
+  b4 = chr((n & 0xff))
+  s = b1 + b2 + b3 + b4
+  非常麻烦，如果换成浮点数就无能为力了。
+  python提供了一个struct模块来解决str和其他二进制数据类型的转换
+  import struct
+  struct.pack('>I', 10240099)
+  >:表示字节序是big-endian，即网络序， I表示4字节无符号整数，后面的参数要和处理指令一致(
+  参数表示的数据类型的字节长度之和应该等于参数所占用的字节数)。
+  struct.unpack('>IH', '\xf0\xf0\xf0\xf0\x80\x80')
+** 位图文件
+   可以使用struct来分析一下位图文件
+   BMP格式采用小端方式存储数据，文件头的结构顺序如下：
+   两个字节：'BM'表示windows位图， 'BA'表示OS/2位图; 一个4字节整数表示位图大小，
+   一个4字节整数：保留位，始终为0；一个4字节图像的偏移量；一个4字节整数：header的字节数
+   一个4字节整数：图像宽度；一个4字节整数：图像高度，一个2字节整数：始终为1， 一个2字节整数：颜色数
+* python 使用sqlite
+  python内置了sqlite3， 可以直接使用
+  使用python的db-api时， 只要搞清楚connection和cursor对象，打开后一定记得关闭，就可以放心使用了
+  
+  import sqlite3
+  conn = sqlite3.connect('test.db')
+  cursor = conn.cursor()
+  cursor.execute('create table user(id varchar(20) primary key, name varchar(20))')
+  cursor.execute('insert into user(id, name) values("1", "mical")')
+  cursor.execute('select * from user where id=?', '1')
+  values = cursor.fetchall()
+  cursor.close()
+  conn.close()
+  sqlite支持常见的标准sql语句以及几种常见的数据类型。
+  有些环境下的事务是自动提交的。

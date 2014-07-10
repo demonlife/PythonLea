@@ -50,3 +50,18 @@ try:
 except (ValueError, IndexError) as e:
     print 'right exception handler, error:', e
     pass
+
+class Test(object):
+    def hello(self):
+        print 'hello'
+
+    def main(cls):
+        print 'main'
+
+    # 声明静态方法
+    main = classmethod(main)
+
+Test.main()
+
+# python调用python文件
+# os.system('python xx.py test')
