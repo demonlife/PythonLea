@@ -833,6 +833,9 @@
     退出环境：deactivate
     进入已经存在的环境或者切换环境： workon env1 或 env2
     删除环境： rmvirtualenv env1
+    以上默认使用python2.x作为python的运行环境
+    如果需要使用python3.x，则使用如下方法创建环境：
+    mkvirtualenv -p /usr/bin/python3 workname
 ** 软件安装
 *** lnmp 的安装
     www.lnmp.org下载最新的源码，阅读readme查看安装方法
@@ -919,3 +922,11 @@
   conn.close()
   sqlite支持常见的标准sql语句以及几种常见的数据类型。
   有些环境下的事务是自动提交的。
+* tornado 的异步使用
+  http://demo.pythoner.com/itt2zh/ch5.html
+  http://www.cnblogs.com/yiwenshengmei/archive/2011/06/08/understanding_tornado.html
+  数据库异步操作： http://www.v2ex.com/t/85694
+** mysql 的异步操作
+   https://github.com/mayflaver/AsyncTorndb
+** mongodb 的异步操作
+   MongoDB，推荐motor，是一个异步的 mongodb 驱动，文档也比较齐全
