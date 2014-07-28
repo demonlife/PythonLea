@@ -930,3 +930,46 @@
    https://github.com/mayflaver/AsyncTorndb
 ** mongodb 的异步操作
    MongoDB，推荐motor，是一个异步的 mongodb 驱动，文档也比较齐全
+* Python 库
+** shutil 模块
+   shutil模块是一种高层次的文件操作工具
+* Python 性能优化
+  http://infiniteloop.in/blog/quick-python-performance-optimization-part-i/
+** 减少函数调用
+   如果需要操作一个list， 直接将该list传入函数，而不是依次传入list的值，然后返回
+** use xrange
+** 涉及到大数据，使用numpy
+** "".join(string)比+或者+= 更好
+** list > for loop > while loop
+   list是最快的
+** 使用cProfile, cStringIO, cPickle
+** 使用迭代器
+** 尽量使用map, reduce, filter代替for
+** for checking 'a in b', dict / set is better than list/tuple
+** while working with big amout of data, if possible use immutable datatypes, they are faster tuples>list
+* Python 需要注意的地方
+  http://blog.segmentfault.com/yexiaobai/1190000000618513
+** 类变量
+   在python中，类变量在内部是作为字典处理的。如果一个变量的名字没有在当前类的字典中发现
+   将搜索祖先类直到被引用的变量名被找到，如果没有在祖先类中找到，会引发一个attributeError异常
+** 除法
+   /:在python2中，如果除数和被除数都是整数，则是整数除法，结果也是整数，如果是python3中，则是正常的除法(浮点除法)
+   //:与其他语言中的取余除法一致
+   如果需要在python2中想达到python3中的效果，可以使用如下方法：
+   from __future__ import division
+** 切片
+   切片操作如果超出列表索引值，不会导致异常
+** 闭包的后期绑定
+   例如一下错误代码：
+   def multiplier():
+       return [lambda x: i * x for i in range(4)]
+   #
+   修改方法如下：
+   def multiplier():
+       return [lambda x, i=i: i * x for i in range(4)]
+   也可以使用functools.partial函数
+   from functools import partial
+   from operator import mul
+   def multipliers():
+       return [partial(mul, i) for i in range(4)]
+       
