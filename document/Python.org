@@ -1018,3 +1018,5 @@
    pip freeze:确认已经安装好的所有包的版本信息
 ** easy_install
    pip命令没有使用和egg一样的发布形式，如果想使用egg安装的话，需要用到easy_install
+** emacs 启用pep8与pyflackes
+   
