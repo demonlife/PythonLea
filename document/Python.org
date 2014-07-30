@@ -811,45 +811,6 @@
    <invokecmd.py>
 * pymongo的使用
 ** 将mongo查询的数据转换为  
-* Python 环境搭建
-** 虚拟环境搭建
-   http://www.the5fire.com/virtualenv-python-env.html
-*** 工具
-    sudo aptitude install python-dev
-    该工具是virtualenv，使用python开发的一个创建虚拟环境的工具
-    ubuntu安装的命令如下：
-    apt-get install python-virtualenv/ sudo pip install virtualenv
-*** 使用
-    先建立一个目录： mkdir testvirtual => cd testvirtual
-    创建虚拟环境：virtualenv env1 => cd env1 => source bin/activate
-    此时会发现shell提示符前多了个env1提示，表明已经是在虚拟环境中了，在该环境中
-    可以任意安装python库，而不用担心会把系统自带的python库搞乱
-*** 另外一个工具
-    virtualenvwrapper，可以通过sudo pip install virtualenvwrapper来安装。
-    安装完之后，需要在用户根目录下的.bashrc末尾加入：
-    source /usr/local/bin/virtualenvwrapper.sh
-    设置好之后，可以使用如下方法操作虚拟环境：
-    mkvirtualenv env1
-    退出环境：deactivate
-    进入已经存在的环境或者切换环境： workon env1 或 env2
-    删除环境： rmvirtualenv env1
-    以上默认使用python2.x作为python的运行环境
-    如果需要使用python3.x，则使用如下方法创建环境：
-    mkvirtualenv -p /usr/bin/python3 workname
-** 软件安装
-*** lnmp 的安装
-    www.lnmp.org下载最新的源码，阅读readme查看安装方法
-*** setuptools
-    该软件主要是需要在安装mysqldb时需要该软件，下载setuptools-0.6c11.tar.gz即可
-*** mysqldb
-    下载mysqldb，在安装mysqldb前，需要先安装libmysqlclient-dev
-    sudo aptitude install libmysqlclient-dev，
-    修改mysqldb中的site.cfg文件，添加mysql_config文件的路径，该文件的路径可以
-    使用命令which mysql_config来确定
-*** redis
-    在官网下载最新的redis源码，执行make即可安装，
-    redis的启动:redis-server redis.conf
-    py-redis: https://github.com/andymccurdy/redis-py
 * Python的名字空间
   名字空间时python最核心的内容
   python的名字实际上是一个字符串对象，它和所指的目标对象一起在名字空间中构成一项
@@ -973,3 +934,87 @@
    def multipliers():
        return [partial(mul, i) for i in range(4)]
        
+* Python 环境搭建
+** python安装的前期准备
+   aptitude -y update
+   aptitude -y upgrade
+   aptitude -y install build-essential
+   aptitude -y install libsqlite3-dev
+   aptitude -y install libreadline6-dev libgdbm-dev zlib1g-dev libbz2-dev
+   aptitude -y install sqlite3 tk-dev zip
+   python相关包的安装
+   aptitude install python-dev
+   #distribute包的安装, 该包是支持python模块构建与导入的工具包
+   wget http://python-distribute.org/distribute_setup.py
+   sudo python distribute_setup.py
+** python 编译安装
+   1.下载源码
+   2. LDFLAGS="-L/usr/lib/x86_64-linux-gnu" ./configure --prefix=/path
+   3. make && make install
+   查看python的版本号
+   python -V / python --version
+** 从ppa安装apt工具包
+   aptitude install python-software-properties
+   add-apt-repository ppa:fkrull/deadsnakes
+   aptitude update
+   aptitude install python2.5
+** 虚拟环境搭建
+   http://www.the5fire.com/virtualenv-python-env.html
+*** 工具
+    sudo aptitude install python-dev
+    该工具是virtualenv，使用python开发的一个创建虚拟环境的工具
+    ubuntu安装的命令如下：
+    apt-get install python-virtualenv/ sudo pip install virtualenv
+*** 使用
+    VIRTUALENV_USE_DISTRIBUTE环境变量是向Distribute明示python运行信息的环境变量。
+    如果希望在开发过程中，希望所开发的python应用程序有“不兼容旧版本的python”或者“
+    兼容最新版本python”要求，最好对该环境变量进行设置。可以将该变量加入到登陆shell里
+    的配置文件中: export VIRTUALENV_USE_DISTRIBUTE=true
+    先建立一个目录： mkdir testvirtual => cd testvirtual
+    创建虚拟环境：virtualenv env1 => cd env1 => source bin/activate(激活运行环境)
+    此时会发现shell提示符前多了个env1提示，表明已经是在虚拟环境中了，在该环境中
+    可以任意安装python库，而不用担心会把系统自带的python库搞乱
+    virtualenv --system-site-packages env:使用系统下的模块或包来创建虚拟运行环境
+*** 另外一个工具
+    virtualenvwrapper，可以通过sudo pip install virtualenvwrapper来安装。
+    安装完之后，需要在用户根目录下的.bashrc末尾加入：
+    if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
+    #export WORKON_HOME=/path #设置虚拟环境建立的命令，默认为当前用户目录下的.virtualenvs/
+    source /usr/local/bin/virtualenvwrapper.sh
+    fi
+    设置好之后，可以使用如下方法操作虚拟环境：
+    mkvirtualenv env1
+    退出环境：deactivate
+    进入已经存在的环境或者切换环境： workon env1 或 env2
+    删除环境： rmvirtualenv env1
+    以上默认使用python2.x作为python的运行环境
+    如果需要使用python3.x，则使用如下方法创建环境：
+    mkvirtualenv -p /usr/bin/python3 workname
+
+    其他使用方法
+    workon #列出虚拟运行环境
+    lsvirtualenv #理出虚拟运行环境
+** 软件安装
+*** lnmp 的安装
+    www.lnmp.org下载最新的源码，阅读readme查看安装方法
+*** setuptools
+    该软件主要是需要在安装mysqldb时需要该软件，下载setuptools-0.6c11.tar.gz即可
+*** mysqldb
+    下载mysqldb，在安装mysqldb前，需要先安装libmysqlclient-dev
+    sudo aptitude install libmysqlclient-dev，
+    修改mysqldb中的site.cfg文件，添加mysql_config文件的路径，该文件的路径可以
+    使用命令which mysql_config来确定
+*** redis
+    在官网下载最新的redis源码，执行make即可安装，
+    redis的启动:redis-server redis.conf
+    py-redis: https://github.com/andymccurdy/redis-py
+** pip
+   pip 的安装：(在github的地址是：https://github.com/pypa/pip)
+   wget https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py
+   sudo python get-pip.py
+   pip 版本的确定： pip --version
+   pip安装的包会放在/usr/local/lib/pythonx.x/site-packages的目录下，如果使用了virtualenv(虚拟环境)
+   则安装在“虚拟环境名”/local/lib/pythonx.x/site-packages目录下
+   pip freeze:确认已经安装好的所有包的版本信息
+** easy_install
+   pip命令没有使用和egg一样的发布形式，如果想使用egg安装的话，需要用到easy_install
