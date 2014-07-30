@@ -1,0 +1,55 @@
+* Tornado 错误处理
+  如果想使用自己的方法替代默认的错误响应， 可以重写RequestHandler中的write_error方法
+  def write_error(self, status_code, **kwargs):
+      xxx
+* tornaodo 模板中使用自己的函数
+  只需要将函数名作为模板的参数传递即可，就像其他变量一样。
+  from tornado.template import Template
+  def myfun(s):
+      return ''.join([x for x in s if x not in 'aeiou'])
+  print Template('my name is {{d('mortimer')}}).generate(d=myfun)
+* tornado 的application可以自己定义
+  class Application(tornado.web.Application):
+      def __init__(self):
+          # 其中的handlers可以专门写成一个文件，用了作为路由文件
+          handlers = [(r"/", TestHandler)]
+          settings = dict(
+          template_path=os.path.join(os.path.dirname(__file__), "templates"),
+          static_path=os.path.join(os.path.dirname(__file__), "static"),
+          ui_modules={},
+          debug=True,)
+          tornado.web.Application.__init__(self, handlers, **settings)
+* 自动转义
+  Tornado默认会自动转义模板中的内容，把标签转换为相应的HTML实体。
+  这样可以防止后端为数据库的网站被恶意脚本攻击。
+  比如，你的网站中有一个评论部分，用户可以在这里添加任何他们想说的文字进行讨论。
+  虽然一些HTML标签在标记和样式冲突时不构成重大威胁（如评论中没有闭<h1>标签），
+  但<script>标签会允许攻击者加载其他的JavaScript文件，打开通向跨站脚本攻击、
+  XSS或漏洞之门。
+  在tornado1.x版本中，模板没有被自动转义
+  在构建Application时， 可以传递autoescape=None来取消自动转义，
+  另一种方法是在每一页的基础上修改自动转义行为，
+  {% autoescape None %} {{xxx}}
+  这些autoescape块不需要结束标签，并且可以设置xhtml_escape来开启自动转义（默认行为），或None来关闭
+  在理想的情况下，你希望保持自动转义开启以便继续防护你的网站。因此，你可以使用{% raw %}指令来输出不转义的内容。
+  {% raw maillink %}
+  需要特别注意的是，当你使用诸如Tornado的linkify()和xsrf_form_html()函数时，
+  自动转义的设置被改变了。所以如果你希望在前面代码的footer中使用linkify()来包含链接，你可以使用一个{% raw %}块
+  {% raw linkify("https://fb.me/burtsbooks", extra_params='ref=website') %}.
+* 嵌入javascript和css
+  直接在UIModule的继承类中，重写embedded_javascript,embedded_css方法即可
+  def embedded_javascript(self):
+      return 'document.write("hello")
+  更灵活的是，可以简单的使用html_body()来在闭合的<body>标签前添加完整的html标记
+  def html_body(self):
+      return "<script> document.write('hello')</script>"
+  可以使用css_files()， javascript_files()来加载对应的文件。
+  def css_files(self):
+      return "/static/css/newcss.css"
+  def javascript_files(self):
+      return 'https://ajax.googleapis.com/ajax.js'
+  模块的内嵌JavaScript和内嵌HTML函数的目标都是紧邻</body>标签，
+  html_body()、javascript_files()和embedded_javascript()都会将内容渲染后插到页面底部，
+  那么它们出现的顺序正好是你指定它们的顺序的倒序
+  需要小心的是，你不能包括一个需要其他地方东西的方法（比如依赖其他文件的JavaScript函数），
+  因为此时他们可能会按照和你期望不同的顺序进行渲染
