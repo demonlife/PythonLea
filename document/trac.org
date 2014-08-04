@@ -1,0 +1,15 @@
+* python 的问题跟踪系统
+** 安装
+   建立问题系统环境，mkvirtualenv trac --no-site-packages
+   workon trac
+   pip install trac
+** trac的使用
+   trac-admin bpbook initenv
+   trad -s --port 8000 bpbook #在8000端口启用trac系统
+** 认证模块的安装
+   aptitude install apache2-utils
+   接着在trac的工程下建立密码文件
+   htpasswd -c projectname/trac.htpasswd username
+   在添加第二个用户时就不需要-c参数了
+   启动程序：
+   tracd -s -p portnum --basic-auth="bpbook,bpbook/trac.htpasswd,BPBook" bpbook
