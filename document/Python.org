@@ -1019,4 +1019,21 @@
 ** easy_install
    pip命令没有使用和egg一样的发布形式，如果想使用egg安装的话，需要用到easy_install
 ** emacs 启用pep8与pyflackes
-   
+* 打包与自动环境建立
+  从python3.3以后打包方式就与现在的python2的打包方式不一样了。
+  python3.3引入了全新的packaging库的导入方法。该方法将所有和打包有关的信息通过一个setup.cfg文件记录。
+** python2 的打包
+   一般将目录结果作为打包对象，目录结构如下：
+   /xxx/project_name/=>setup.py, package_name=>__init__.py, src1, src2,py
+   setup.py就是打包时需要自己填写代码的地方。
+   如果需要包含非python程序文件的捆绑打包，就需要在对应的源代码目录中准备一个叫做MANIFEST.in的文件。
+   内容如下：
+   include *.txt
+   recursive-include dirname *.txt *.css *.html *.png
+   prune example
+   将python setup.py sdist生成的压缩文件复制到安装环境中后， 使用如下命令安装：
+   pip install xxx.tar.gz
+
+   bdist_egg:egg格式的安装包是包含了C语言扩展，采用编译后二进制形式发布的一种格式。使用bdist_egg
+   格式制作的egg发布包一般只能安装在同制作环境一致的操作系统以及对应的python版本下，在包命名
+   上会体现这一点。
