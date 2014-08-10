@@ -1,0 +1,3 @@
+* 打印用unicode表示的字符为汉字
+  s = '\u4e2d\u56fd'
+  print s.decode('unicode_escape')
