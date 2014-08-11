@@ -801,7 +801,28 @@
 ** using callbacks
    In Python re.sub() can be used to add callback functionality to regular expression replacements
    <code --callbacks>
-   
+** python正则表达式
+   re.match(reg_express, str):match()方法的工作方式是只有当被搜索字符串的开头匹配模式的时候才能查找到匹配对象,否则返回None
+   例如：re.match('dog', 'dog and dogcats'),有结果返回，但是re.match('dogc', 'dog and dogcats'),返回None
+   re.search(reg_express, str):search()方法和match()类似，不过search()方法不会限制我们只从字符串的开头查找匹配,
+   但是search方法只会查找到一个匹配项之后停止继续查找, 找不到会返回None
+   例如：re.search('dog', 'dog and dogcats'), re.search('dogc', 'dog and dogcat')都会有数据返回
+   re.findall(reg_express, str):匹配所有对象, 返回的结果是一个list
+
+   match, search,可以使用分组功能，findall不能使用分组功能
+   search, match返回的是"匹配对象", 是一个关于匹配子串的包装类。匹配对象含有匹配内容在原始字符串中的开始和结束位置
+*** 正则表达式拼接
+    token_specification = [
+        ('NUMBER',  r'\d+(\.\d*)?'), # Integer or decimal number
+        ('ASSIGN',  r':='),          # Assignment operator
+        ('END',     r';'),           # Statement terminator
+        ('ID',      r'[A-Za-z]+'),   # Identifiers
+        ('OP',      r'[+\-*/]'),     # Arithmetic operators
+        ('NEWLINE', r'\n'),          # Line endings
+        ('SKIP',    r'[ \t]+'),      # Skip over spaces and tabs
+        ('MISMATCH',r'.'),           # Any other character
+    ]
+    tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
 * 第三方库
 ** docopt
    docopt是一个第三方开发的模块，用于创建command line interface
